@@ -67,15 +67,15 @@ class MetersManager : public juce::Component,
   juce::OwnedArray<FeatureMeter> widgets_;
 
   /// @brief Common widget width
-  static const int kWidgetWidth = 100;
+  static const int kWidgetWidth = 200;
   /// @brief Common widget height
-  static const int kWidgetHeight = 100;
+  static const int kWidgetHeight = 200;
   /// @brief Margin (vertical & horizontal) between widgets
   static const int kWidgetMargin = 10;
   /// @brief Height of each widgets column
   static const int kColumnHeight = 250;
   /// @brief Width of each widgets column
-  static const int kColumnWidth = 200;
+  static const int kColumnWidth = 250;
 };
 
 #endif  // INSTANTSONICVIEW_IMPLEMENTATION_COMMON_METERSMANAGER_H_

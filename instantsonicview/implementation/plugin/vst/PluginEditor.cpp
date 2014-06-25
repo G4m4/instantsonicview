@@ -56,7 +56,7 @@ void InstantSonicViewAudioProcessorEditor::paint(juce::Graphics& g) {
   widgets_manager_.setBounds(0, 0, this->getWidth(), this->getHeight());
 
   // DEBUG
-  debug_infos_.setBounds(0, 350, this->getWidth(), 100);
+  debug_infos_.setBounds(0, 500, this->getWidth(), 100);
   //  /DEBUG
 }
 

@@ -37,5 +37,6 @@ FeatureMeter::~FeatureMeter() {
 
 void FeatureMeter::paint(juce::Graphics& g) {
   label_.setCentreRelative(0.5f, 0.95f);
+  label_.setColour(juce::Colours::whitesmoke);
   MeterComponent::paint(g);
 }
