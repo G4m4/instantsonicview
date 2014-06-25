@@ -179,7 +179,7 @@ double InstantSonicViewAudioProcessor::GetLastProcessTime() const {
 }
 //  /DEBUG
 
-float InstantSonicViewAudioProcessor::getFeatureValue(
+float InstantSonicViewAudioProcessor::GetFeatureValue(
     const unsigned int feature_idx) const {
   return features_value_[feature_idx];
 }

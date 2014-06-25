@@ -55,7 +55,7 @@ void MetersManager::paint(juce::Graphics& g) {
        ++param_id) {
     FeatureMeter* widget(widgets_[param_id]);
     // Update feature values
-    widget->setValue(proc->getFeatureValue(param_id));
+    widget->setValue(proc->GetFeatureValue(param_id));
     widget->setBounds(current_x, current_y, kWidgetWidth, kWidgetHeight);
     current_y += kWidgetHeight;
     current_y += kWidgetMargin;
