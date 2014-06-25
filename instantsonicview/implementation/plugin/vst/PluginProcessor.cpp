@@ -116,12 +116,13 @@ const String InstantSonicViewAudioProcessor::getProgramName(int index) {
   return String::empty;
 }
 
-void InstantSonicViewAudioProcessor::changeProgramName(int index,
-                                               const juce::String& newName) {
+void InstantSonicViewAudioProcessor::changeProgramName(
+    int index,
+    const juce::String& newName) {
 }
 
 void InstantSonicViewAudioProcessor::prepareToPlay(double sampleRate,
-                                           int samplesPerBlock) {
+                                                   int samplesPerBlock) {
   // Notify UI of the last changes
   sendChangeMessage();
 }
@@ -131,8 +132,9 @@ void InstantSonicViewAudioProcessor::releaseResources() {
   // spare memory, etc.
 }
 
-void InstantSonicViewAudioProcessor::processBlock(juce::AudioSampleBuffer& buffer,
-                                          juce::MidiBuffer& midiMessages) {
+void InstantSonicViewAudioProcessor::processBlock(
+    juce::AudioSampleBuffer& buffer,
+    juce::MidiBuffer& midiMessages) {
   const double counter_start(juce::Time::getMillisecondCounterHiRes());
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
 }
@@ -145,14 +147,15 @@ AudioProcessorEditor* InstantSonicViewAudioProcessor::createEditor() {
   return new InstantSonicViewAudioProcessorEditor(this);
 }
 
-void InstantSonicViewAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
+void InstantSonicViewAudioProcessor::getStateInformation(
+    juce::MemoryBlock& destData) {
   // You should use this method to store your parameters in the memory block.
   // You could do that either as raw data, or use the XML or ValueTree classes
   // as intermediaries to make it easy to save and load complex data.
 }
 
 void InstantSonicViewAudioProcessor::setStateInformation(const void* data,
-                                                 int sizeInBytes) {
+                                                         int sizeInBytes) {
 }
 
 void InstantSonicViewAudioProcessor::addChangeListener(
