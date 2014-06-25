@@ -28,6 +28,7 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/MetersManager.h"
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
 
 static const int kMainWindowSizeX(800);
@@ -60,6 +61,7 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   InstantSonicViewAudioProcessor* getProcessor() const;
 
  private:
+  MetersManager widgets_manager_;
   juce::TextEditor debug_infos_;
   static const int kTimerInterval = 100;
 };

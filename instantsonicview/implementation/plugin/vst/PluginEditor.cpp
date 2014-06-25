@@ -25,11 +25,17 @@
 #include "instantsonicview/implementation/plugin/vst/PluginEditor.h"
 
 #include "instantsonicview/src/common.h"
+#include "instantsonicview/src/analyzer/features.h"
 
 InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
     InstantSonicViewAudioProcessor* owner)
     : AudioProcessorEditor(owner),
+      widgets_manager_(instantsonicview::analyzer::kFeaturesMeta),
       debug_infos_() {
+  addAndMakeVisible(&widgets_manager_);
+  // TODO(gm): this is not normal,
+  // plus adding/removing change listeners should be done in the same class
+  addChangeListener(&widgets_manager_);
 
   // DEBUG
   addAndMakeVisible(&debug_infos_);
@@ -47,6 +53,7 @@ InstantSonicViewAudioProcessorEditor::~InstantSonicViewAudioProcessorEditor() {
 
 void InstantSonicViewAudioProcessorEditor::paint(juce::Graphics& g) {
   g.fillAll(Colours::white);
+  widgets_manager_.setBounds(0, 0, this->getWidth(), this->getHeight());
 
   // DEBUG
   debug_infos_.setBounds(0, 350, this->getWidth(), 100);
