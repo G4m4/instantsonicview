@@ -2,6 +2,7 @@
 
 file(GLOB
      INSTANTSONICVIEW_IMPLEMENTATION_SRC
+     *.cpp
      *.cc
 )
 
