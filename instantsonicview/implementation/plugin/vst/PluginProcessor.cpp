@@ -27,9 +27,7 @@
 #include "instantsonicview/implementation/plugin/vst/PluginEditor.h"
 
 InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
-    : process_time_(0.0),
-      features_value_(),
-      analyzer_(48000.0f) {
+    : process_time_(0.0) {
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {
@@ -136,13 +134,11 @@ void InstantSonicViewAudioProcessor::releaseResources() {
 void InstantSonicViewAudioProcessor::processBlock(
     juce::AudioSampleBuffer& buffer,
     juce::MidiBuffer& midiMessages) {
+  const double counter_start(juce::Time::getMillisecondCounterHiRes());
   const float* const mono_buffer(buffer.getReadPointer(0));
   const unsigned int mono_buffer_length(buffer.getNumSamples());
-  const double counter_start(juce::Time::getMillisecondCounterHiRes());
-  const unsigned int kSubframesCount(analyzer_.Process(mono_buffer,
-                                                       mono_buffer_length,
-                                                       &features_value_[0]));
-  INSTANTSONICVIEW_ASSERT(kSubframesCount < 2);
+  bridge_.FeedData(mono_buffer, mono_buffer_length);
+  bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
 }
 
@@ -181,7 +177,7 @@ double InstantSonicViewAudioProcessor::GetLastProcessTime() const {
 
 float InstantSonicViewAudioProcessor::GetFeatureValue(
     const unsigned int feature_idx) const {
-  return features_value_[feature_idx];
+  return bridge_.GetFeatureValue(feature_idx);
 }
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter() {

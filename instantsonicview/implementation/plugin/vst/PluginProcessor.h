@@ -26,7 +26,8 @@
 #define INSTANTSONICVIEW_PLUGIN_COMMON_PLUGINPROCESSOR_H_
 
 #include "JuceHeader.h"
-#include "externals/chartreuse/chartreuse/src/interface/analyzer.h"
+
+#include "instantsonicview/implementation/common/Bridge.h"
 
 /// @brief Plugin "processor" class
 ///
@@ -85,9 +86,8 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
 
  private:
   double process_time_;
-  float features_value_[chartreuse::interface::kAvailableDescriptorsCount * 2];
 
-  chartreuse::interface::Analyzer analyzer_;
+  Bridge bridge_;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(InstantSonicViewAudioProcessor)
 };
