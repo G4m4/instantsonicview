@@ -1,7 +1,7 @@
 /// @filename AppConfig.h
 /// @brief InstantSonicView VST plugin specific config header
 /// @author gm
-/// @copyright gm 2013
+/// @copyright gm 2014
 ///
 /// This file is part of InstantSonicView
 ///

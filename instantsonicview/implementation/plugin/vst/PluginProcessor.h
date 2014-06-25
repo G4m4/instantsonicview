@@ -1,7 +1,7 @@
 /// @filename PluginProcessor.h
 /// @brief InstantSonicView plugin processor (audio)
 /// @author gm
-/// @copyright gm 2013
+/// @copyright gm 2014
 ///
 /// This file is part of InstantSonicView
 ///
@@ -26,13 +26,13 @@
 #define INSTANTSONICVIEW_PLUGIN_COMMON_PLUGINPROCESSOR_H_
 
 #include "JuceHeader.h"
-#include "instantsonicview/src/analyzer/analyzer.h"
+#include "externals/chartreuse/chartreuse/src/interface/analyzer.h"
 
 /// @brief Plugin "processor" class
 ///
 /// Contains all audio, presets and Midi stuff
 class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
-                               public juce::ChangeBroadcaster {
+                                        public juce::ChangeBroadcaster {
  public:
   InstantSonicViewAudioProcessor();
   ~InstantSonicViewAudioProcessor();
@@ -84,7 +84,7 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
  private:
   double process_time_;
 
-  instantsonicview::analyzer::Analyzer analyzer_;
+  chartreuse::interface::Analyzer analyzer_;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(InstantSonicViewAudioProcessor)
 };

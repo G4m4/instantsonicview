@@ -1,7 +1,7 @@
 /// @filename PluginProcessor.cpp
 /// @brief InstantSonicView plugin processor (audio)
 /// @author gm
-/// @copyright gm 2013
+/// @copyright gm 2014
 ///
 /// This file is part of InstantSonicView
 ///
@@ -28,7 +28,7 @@
 
 InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
 : process_time_(0.0),
-  analyzer_() {
+  analyzer_(48000.0f) {
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {

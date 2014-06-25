@@ -1,7 +1,7 @@
 /// @filename PluginEditor.cpp
 /// @brief InstantSonicView plugin editor (UI & control)
 /// @author gm
-/// @copyright gm 2013
+/// @copyright gm 2014
 ///
 /// This file is part of InstantSonicView
 ///
