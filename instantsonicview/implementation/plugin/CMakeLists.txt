@@ -30,6 +30,7 @@ include_directories(SYSTEM
 )
 
 include_directories(
+  ${CHARTREUSE_INCLUDE_DIR}
   ${INSTANTSONICVIEW_INCLUDE_DIR}
   # This is required since Juce-generated files are looking for files there
   ${INSTANTSONICVIEW_PLUGIN_DIR}/vst
@@ -119,6 +120,7 @@ if (${SYSTEM_IS_MACOSX})
 endif (${SYSTEM_IS_MACOSX})
 
 target_link_libraries(instantsonicview_vst
+                      chartreuse_lib
                       instantsonicview_lib)
 
 set_target_mt(instantsonicview_vst)

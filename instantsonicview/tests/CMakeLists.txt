@@ -7,6 +7,7 @@ include_directories(
 )
 
 include_directories(
+  ${CHARTREUSE_INCLUDE_DIR}
   ${INSTANTSONICVIEW_INCLUDE_DIR}
 )
 
@@ -33,6 +34,7 @@ add_executable(instantsonicview_tests
 set_target_mt(instantsonicview_tests)
 
 target_link_libraries(instantsonicview_tests
+  chartreuse_lib
   instantsonicview_lib
   gtest_main
 )

@@ -1,6 +1,7 @@
 # @brief InstantSonicView main source folder cmake file
 
 include_directories(
+  ${CHARTREUSE_INCLUDE_DIR}
   ${INSTANTSONICVIEW_INCLUDE_DIR}
 )
 

@@ -247,6 +247,25 @@ endif (${SYSTEM_IS_MACOSX})
 
 # Various includes
 
+# Chartreuse
+set(CHARTREUSE_DIR
+  ${CMAKE_CURRENT_SOURCE_DIR}/externals/chartreuse
+)
+set(CHARTREUSE_BUILD_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/chartreuse
+)
+set(CHARTREUSE_INCLUDE_DIR
+  ${CHARTREUSE_DIR}
+)
+if(EXISTS ${CHARTREUSE_DIR})
+  add_subdirectory(${CHARTREUSE_DIR} ${CHARTREUSE_BUILD_DIR})
+endif(EXISTS ${CHARTREUSE_DIR})
+
+# Routing options to Chartreuse library
+if(${INSTANTSONICVIEW_ENABLE_SIMD} STREQUAL "ON")
+  set(CHARTREUSE_ENABLE_SIMD
+      ON)
+endif(${INSTANTSONICVIEW_ENABLE_SIMD} STREQUAL "ON")
 
 # Google Test framework
 if (${INSTANTSONICVIEW_HAS_GTEST} STREQUAL "ON")
