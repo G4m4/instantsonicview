@@ -81,8 +81,11 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
   double GetLastProcessTime() const;
   //  /DEBUG
 
+  float getFeatureValue(const unsigned int feature_idx) const;
+
  private:
   double process_time_;
+  float features_value_[chartreuse::interface::kAvailableDescriptorsCount * 2];
 
   chartreuse::interface::Analyzer analyzer_;
 

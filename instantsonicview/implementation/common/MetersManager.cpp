@@ -49,10 +49,13 @@ MetersManager::~MetersManager() {
 void MetersManager::paint(juce::Graphics& g) {
   int current_x(0);
   int current_y(0);
+  const InstantSonicViewAudioProcessor* proc(getEditor().getProcessor());
   for (int param_id(0);
        param_id < widgets_.size();
        ++param_id) {
     FeatureMeter* widget(widgets_[param_id]);
+    // Update feature values
+    widget->setValue(proc->getFeatureValue(param_id));
     widget->setBounds(current_x, current_y, kWidgetWidth, kWidgetHeight);
     current_y += kWidgetHeight;
     current_y += kWidgetMargin;

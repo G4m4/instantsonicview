@@ -67,9 +67,9 @@ class MetersManager : public juce::Component,
   juce::OwnedArray<FeatureMeter> widgets_;
 
   /// @brief Common widget width
-  static const int kWidgetWidth = 60;
+  static const int kWidgetWidth = 100;
   /// @brief Common widget height
-  static const int kWidgetHeight = 60;
+  static const int kWidgetHeight = 100;
   /// @brief Margin (vertical & horizontal) between widgets
   static const int kWidgetMargin = 10;
   /// @brief Height of each widgets column
