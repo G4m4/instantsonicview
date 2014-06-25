@@ -102,7 +102,7 @@ double InstantSonicViewAudioProcessor::getTailLengthSeconds() const {
 }
 
 int InstantSonicViewAudioProcessor::getNumPrograms() {
-  return 0;
+  return 1;
 }
 
 int InstantSonicViewAudioProcessor::getCurrentProgram() {
