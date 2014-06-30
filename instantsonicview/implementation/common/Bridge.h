@@ -52,6 +52,8 @@ class Bridge : public juce::Thread {
   float features_value_[chartreuse::interface::kAvailableDescriptorsCount * 11];
 
   chartreuse::interface::Analyzer analyzer_;
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Bridge)
 };
 
 #endif  // INSTANTSONICVIEW_IMPLEMENTATION_COMMON_BRIDGE_H_

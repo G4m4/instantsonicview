@@ -75,6 +75,8 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
 
   juce::TextEditor debug_infos_;
   static const int kTimerInterval = 100;
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(InstantSonicViewAudioProcessorEditor)
 };
 
 #endif  // INSTANTSONICVIEW_PLUGIN_COMMON_PLUGINEDITOR_H_
