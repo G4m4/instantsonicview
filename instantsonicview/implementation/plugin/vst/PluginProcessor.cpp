@@ -136,11 +136,14 @@ void InstantSonicViewAudioProcessor::processBlock(
     juce::AudioSampleBuffer& buffer,
     juce::MidiBuffer& midiMessages) {
   const double counter_start(juce::Time::getMillisecondCounterHiRes());
+  last_buffer_ = buffer;
   const float* const mono_buffer(buffer.getReadPointer(0));
   const unsigned int mono_buffer_length(buffer.getNumSamples());
   bridge_.FeedData(mono_buffer, mono_buffer_length);
   bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
+  // Inform UI of change
+  sendChangeMessage();
 }
 
 bool InstantSonicViewAudioProcessor::hasEditor() const {
@@ -168,6 +171,10 @@ void InstantSonicViewAudioProcessor::addChangeListener(
   ChangeBroadcaster::addChangeListener(listener);
   // Update newly added listener
   sendChangeMessage();
+}
+
+const AudioSampleBuffer& InstantSonicViewAudioProcessor::GetLastBuffer(void) const {
+  return last_buffer_;
 }
 
 // DEBUG

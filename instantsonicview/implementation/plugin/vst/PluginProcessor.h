@@ -78,6 +78,8 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
   // Overrides from inherited classes
   void addChangeListener(juce::ChangeListener* listener);
 
+  const AudioSampleBuffer& GetLastBuffer(void) const;
+
   // DEBUG
   double GetLastProcessTime() const;
   //  /DEBUG
@@ -86,6 +88,7 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
 
  private:
   double process_time_;
+  AudioSampleBuffer last_buffer_;
 
   Bridge bridge_;
 
