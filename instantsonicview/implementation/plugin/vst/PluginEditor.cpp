@@ -126,9 +126,7 @@ InstantSonicViewAudioProcessor* InstantSonicViewAudioProcessorEditor::getProcess
 }
 
 void InstantSonicViewAudioProcessorEditor::startRecording() {
-  const File file (File::getSpecialLocation (File::userDocumentsDirectory)
-                      .getNonexistentChildFile ("Juce Demo Audio Recording", ".wav"));
-  recorder.startRecording(file, getProcessor()->getSampleRate());
+  recorder.startRecording(getProcessor()->getSampleRate());
 
   recordButton.setButtonText ("Stop");
   recordingThumbnail.setDisplayFullThumbnail (false);

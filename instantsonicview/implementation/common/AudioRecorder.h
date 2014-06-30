@@ -34,7 +34,7 @@ class AudioRecorder : public ChangeListener {
 
   ~AudioRecorder();
 
-  void startRecording(const File& file, double sample_rate);
+  void startRecording(double sample_rate);
 
   void stop();
 
@@ -45,6 +45,7 @@ private:
   AudioThumbnail& thumbnail;
   TimeSliceThread backgroundThread; // the thread that will write our audio data to disk
   ScopedPointer<AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
+  MemoryBlock buffer_;
   int64 nextSampleNum;
 
   CriticalSection writerLock;

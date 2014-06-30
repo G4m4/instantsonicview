@@ -29,6 +29,7 @@
 AudioRecorder::AudioRecorder (AudioThumbnail& thumbnailToUpdate)
     : thumbnail (thumbnailToUpdate),
       backgroundThread("Audio Recorder Thread"),
+      buffer_(),
       nextSampleNum(0),
       activeWriter(nullptr) {
   backgroundThread.startThread();
@@ -38,21 +39,20 @@ AudioRecorder::~AudioRecorder() {
   stop();
 }
 
-void AudioRecorder::startRecording(const File& file, double sample_rate) {
+void AudioRecorder::startRecording(double sample_rate) {
   stop();
 
   if (sample_rate > 0) {
-    // Create an OutputStream to write to our destination file...
-    file.deleteFile();
-    ScopedPointer<FileOutputStream> fileStream (file.createOutputStream());
+    // Create an OutputStream to write to our destination memory block...
+    ScopedPointer<MemoryOutputStream> memStream(new juce::MemoryOutputStream(buffer_, false));
 
-    if (fileStream != nullptr) {
+    if (memStream != nullptr) {
       // Now create a WAV writer object that writes to our output stream...
       WavAudioFormat wavFormat;
-      AudioFormatWriter* writer = wavFormat.createWriterFor (fileStream, sample_rate, 1, 16, StringPairArray(), 0);
+      AudioFormatWriter* writer = wavFormat.createWriterFor(memStream, sample_rate, 1, 16, StringPairArray(), 0);
 
       if (writer != nullptr) {
-        fileStream.release(); // (passes responsibility for deleting the stream to the writer object that is now using it)
+        memStream.release(); // (passes responsibility for deleting the stream to the writer object that is now using it)
 
         // Now we'll create one of these helper objects which will act as a FIFO buffer, and will
         // write the data to disk on our background thread.
