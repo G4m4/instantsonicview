@@ -37,15 +37,22 @@ class AudioRecorder {
   void startRecording(double sample_rate);
   void stopRecording(void);
 
+  void startReplay(void);
+  void stopReplay(void);
 
+  bool isReplaying() const;
   bool isRecording() const;
   void AudioCallback(const juce::AudioSampleBuffer& buffer);
+
+  bool GetNextReplayBlock(juce::AudioSampleBuffer* dest);
 
 private:
   TimeSliceThread backgroundThread; // the thread that will write our audio data to disk
   ScopedPointer<AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
   MemoryBlock buffer_;
   int64 nextSampleNum;
+  AudioFormatReader* active_reader_;
+  int64 reader_samples_num_;
 
   CriticalSection writerLock;
   AudioFormatWriter::ThreadedWriter* volatile activeWriter;

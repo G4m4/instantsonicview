@@ -33,17 +33,24 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
       audio_display_(),
       recordingThumbnail(),
       recordButton("Record"),
+      replayButton("Replay"),
+      nextSampleNum(0),
+      was_replaying_(false),
       debug_infos_() {
   addAndMakeVisible(&audio_display_);
   getProcessor()->addChangeListener(&audio_display_);
 
   addAndMakeVisible (recordingThumbnail);
 
-
   addAndMakeVisible (recordButton);
   recordButton.addListener (this);
   recordButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
   recordButton.setColour (TextButton::textColourOnId, Colours::black);
+
+  addAndMakeVisible (replayButton);
+  replayButton.addListener (this);
+  replayButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
+  replayButton.setColour (TextButton::textColourOnId, Colours::black);
 
   // DEBUG
   addAndMakeVisible(&debug_infos_);
@@ -70,7 +77,7 @@ void InstantSonicViewAudioProcessorEditor::resized(void) {
   audio_display_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
   recordingThumbnail.setBounds(area.removeFromTop(getHeight() / 4).reduced(8));
   recordButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
-  recordButton.setBounds(area.removeFromTop(72).removeFromLeft(140).reduced(8));
+  replayButton.setBounds(area.removeFromTop(72).removeFromLeft(140).reduced(8));
 
   // DEBUG
   debug_infos_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
@@ -82,12 +89,19 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
   InstantSonicViewAudioProcessor* proc(getProcessor());
   // No other change broacaster than the processor for now!
   INSTANTSONICVIEW_ASSERT(source == proc);
+
   if (getProcessor()->isRecording()) {
     recordingThumbnail.getAudioThumbnail().addBlock(nextSampleNum,
                                                     getProcessor()->GetLastBuffer(),
                                                     0,
                                                     getProcessor()->GetLastBuffer().getNumSamples());
     nextSampleNum += getProcessor()->GetLastBuffer().getNumSamples();
+  }
+
+  if (was_replaying_
+      && !getProcessor()->isReplaying()) {
+    replayButton.setButtonText("Replay");
+    was_replaying_ = false;
   }
 }
 
@@ -102,6 +116,8 @@ void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
       stopRecording();
     else
       startRecording();
+  } else if (button == &replayButton) {
+    startReplay();
   } else {
     // Should never happen
     INSTANTSONICVIEW_ASSERT(false);
@@ -143,4 +159,10 @@ void InstantSonicViewAudioProcessorEditor::stopRecording() {
   getProcessor()->stopRecording();
   recordButton.setButtonText ("Record");
   recordingThumbnail.setDisplayFullThumbnail (true);
+}
+
+void InstantSonicViewAudioProcessorEditor::startReplay(void) {
+  getProcessor()->startReplay();
+  replayButton.setButtonText("Stop");
+  was_replaying_ = true;
 }

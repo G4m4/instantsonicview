@@ -81,9 +81,12 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
 
   const AudioSampleBuffer& GetLastBuffer(void) const;
 
+  void startReplay(void);
   void startRecording(void);
   void stopRecording(void);
   bool isRecording(void) const;
+  bool isReplaying(void) const;
+
   // DEBUG
   double GetLastProcessTime() const;
   //  /DEBUG

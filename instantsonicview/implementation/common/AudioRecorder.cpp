@@ -29,12 +29,15 @@
 AudioRecorder::AudioRecorder ()
     : backgroundThread("Audio Recorder Thread"),
       buffer_(),
-      activeWriter(nullptr) {
+      activeWriter(nullptr),
+      active_reader_(nullptr),
+      reader_samples_num_(0) {
   backgroundThread.startThread();
 }
 
 AudioRecorder::~AudioRecorder() {
   stopRecording();
+  stopReplay();
 }
 
 void AudioRecorder::startRecording(double sample_rate) {
@@ -77,6 +80,33 @@ void AudioRecorder::stopRecording(void) {
   threadedWriter = nullptr;
 }
 
+void AudioRecorder::startReplay(void) {
+  stopReplay();
+
+  ScopedPointer<MemoryInputStream> memStream(new juce::MemoryInputStream(buffer_, false));
+
+  if (memStream != nullptr) {
+    // Now create a WAV writer object that writes to our output stream...
+    juce::WavAudioFormat wavFormat;
+    juce::AudioFormatReader* reader = wavFormat.createReaderFor(memStream, true);
+
+    if (reader != nullptr) {
+      memStream.release(); // (passes responsibility for deleting the stream to the writer object that is now using it)
+      active_reader_ = reader;
+      reader_samples_num_ = 0;
+    }
+  }
+}
+
+void AudioRecorder::stopReplay(void) {
+  delete active_reader_;
+  active_reader_ = nullptr;
+}
+
+bool AudioRecorder::isReplaying() const {
+  return active_reader_ != nullptr;
+}
+
 bool AudioRecorder::isRecording() const {
   return activeWriter != nullptr;
 }
@@ -89,5 +119,22 @@ void AudioRecorder::AudioCallback(const juce::AudioSampleBuffer& buffer) {
   }
 }
 
+bool AudioRecorder::GetNextReplayBlock(juce::AudioSampleBuffer* dest) {
+  if (active_reader_ == nullptr) {
+    return false;
+  } else {
+    if (reader_samples_num_ > active_reader_->lengthInSamples) {
+      stopReplay();
+      return false;
+    } else {
+      active_reader_->read(dest,
+                           0,
+                           dest->getNumSamples(),
+                           reader_samples_num_,
+                           true,
+                           false);
+      reader_samples_num_ += dest->getNumSamples();
+      return true;
+    }
   }
 }

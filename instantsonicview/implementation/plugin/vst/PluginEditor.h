@@ -66,10 +66,15 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   void startRecording(void);
   void stopRecording(void);
 
+  void startReplay(void);
+
  private:
   LiveScrollingAudioDisplay audio_display_;
   RecordingThumbnail recordingThumbnail;
   TextButton recordButton;
+  TextButton replayButton;
+  int64 nextSampleNum;
+  bool was_replaying_;
 
   juce::TextEditor debug_infos_;
   static const int kTimerInterval = 100;
