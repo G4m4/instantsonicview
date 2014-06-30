@@ -30,12 +30,22 @@
 InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
     InstantSonicViewAudioProcessor* owner)
     : AudioProcessorEditor(owner),
-      widgets_manager_(instantsonicview::analyzer::kFeaturesMeta),
+      audio_display_(),
+      recordingThumbnail(),
+      recorder(recordingThumbnail.getAudioThumbnail()),
+      recordButton("Record"),
       debug_infos_() {
-  addAndMakeVisible(&widgets_manager_);
-  // TODO(gm): this is not normal,
-  // plus adding/removing change listeners should be done in the same class
-  addChangeListener(&widgets_manager_);
+  addAndMakeVisible(&audio_display_);
+  getProcessor()->addChangeListener(&audio_display_);
+
+  addAndMakeVisible (recordingThumbnail);
+
+  getProcessor()->addChangeListener(&recorder);
+
+  addAndMakeVisible (recordButton);
+  recordButton.addListener (this);
+  recordButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
+  recordButton.setColour (TextButton::textColourOnId, Colours::black);
 
   // DEBUG
   addAndMakeVisible(&debug_infos_);
@@ -48,15 +58,25 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 }
 
 InstantSonicViewAudioProcessorEditor::~InstantSonicViewAudioProcessorEditor() {
+  getProcessor()->removeChangeListener(&audio_display_);
+  getProcessor()->removeChangeListener(&recorder);
   getProcessor()->removeChangeListener(this);
 }
 
 void InstantSonicViewAudioProcessorEditor::paint(juce::Graphics& g) {
   g.fillAll(Colours::white);
-  widgets_manager_.setBounds(0, 0, this->getWidth(), this->getHeight());
+}
+
+void InstantSonicViewAudioProcessorEditor::resized(void) {
+  Rectangle<int> area(getLocalBounds());
+
+  audio_display_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
+  recordingThumbnail.setBounds(area.removeFromTop(getHeight() / 4).reduced(8));
+  recordButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
+  recordButton.setBounds(area.removeFromTop(72).removeFromLeft(140).reduced(8));
 
   // DEBUG
-  debug_infos_.setBounds(0, 500, this->getWidth(), 100);
+  debug_infos_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
   //  /DEBUG
 }
 
@@ -65,13 +85,23 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
   InstantSonicViewAudioProcessor* proc(getProcessor());
   // No other change broacaster than the processor for now!
   INSTANTSONICVIEW_ASSERT(source == proc);
-  // Inform all UI subcomponents of any change
-  sendChangeMessage();
 }
 
 void InstantSonicViewAudioProcessorEditor::timerCallback() {
   const double time(getProcessor()->GetLastProcessTime());
   debug_infos_.setText(juce::String(time));
+}
+
+void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
+  if (button == &recordButton) {
+    if (recorder.isRecording())
+      stopRecording();
+    else
+      startRecording();
+  } else {
+    // Should never happen
+    INSTANTSONICVIEW_ASSERT(false);
+  }
 }
 
 float InstantSonicViewAudioProcessorEditor::GetParamValue(const int param_id) {
@@ -93,4 +123,19 @@ void InstantSonicViewAudioProcessorEditor::ParamGestureEnded(const int param_id)
 
 InstantSonicViewAudioProcessor* InstantSonicViewAudioProcessorEditor::getProcessor() const {
   return static_cast<InstantSonicViewAudioProcessor*>(getAudioProcessor());
+}
+
+void InstantSonicViewAudioProcessorEditor::startRecording() {
+  const File file (File::getSpecialLocation (File::userDocumentsDirectory)
+                      .getNonexistentChildFile ("Juce Demo Audio Recording", ".wav"));
+  recorder.startRecording(file, getProcessor()->getSampleRate());
+
+  recordButton.setButtonText ("Stop");
+  recordingThumbnail.setDisplayFullThumbnail (false);
+}
+
+void InstantSonicViewAudioProcessorEditor::stopRecording() {
+  recorder.stop();
+  recordButton.setButtonText ("Record");
+  recordingThumbnail.setDisplayFullThumbnail (true);
 }

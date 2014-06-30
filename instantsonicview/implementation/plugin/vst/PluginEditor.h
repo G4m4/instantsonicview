@@ -28,7 +28,9 @@
 
 #include "JuceHeader.h"
 
-#include "instantsonicview/implementation/common/MetersManager.h"
+#include "instantsonicview/implementation/common/AudioRecorder.h"
+#include "instantsonicview/implementation/common/LiveScrollingAudioDisplay.h"
+#include "instantsonicview/implementation/common/RecordingThumbnail.h"
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
 
 static const int kMainWindowSizeX(800);
@@ -38,18 +40,20 @@ static const int kMainWindowSizeY(600);
 ///
 /// Contains all UI and user control stuff
 class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                    public juce::ChangeBroadcaster,
-                                    public juce::ChangeListener,
-                                    public juce::Timer {
+                                             public juce::ChangeListener,
+                                             public juce::Timer,
+                                             public juce::Button::Listener {
  public:
   explicit InstantSonicViewAudioProcessorEditor(InstantSonicViewAudioProcessor* owner);
   ~InstantSonicViewAudioProcessorEditor();
 
   void paint(juce::Graphics& g);
+  void resized();
 
   // Overrides from inherited classes
   void changeListenerCallback(juce::ChangeBroadcaster *source);
   void timerCallback();
+  void buttonClicked(Button* button) override;
 
   // Give access to parameter changes to other UI components
   float GetParamValue(const int param_id);
@@ -60,8 +64,15 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   /// @brief Retrieve an access to the audio processor
   InstantSonicViewAudioProcessor* getProcessor() const;
 
+  void startRecording(void);
+  void stopRecording(void);
+
  private:
-  MetersManager widgets_manager_;
+  LiveScrollingAudioDisplay audio_display_;
+  RecordingThumbnail recordingThumbnail;
+  AudioRecorder recorder;
+  TextButton recordButton;
+
   juce::TextEditor debug_infos_;
   static const int kTimerInterval = 100;
 };
