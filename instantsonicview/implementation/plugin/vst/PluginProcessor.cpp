@@ -27,7 +27,9 @@
 #include "instantsonicview/implementation/plugin/vst/PluginEditor.h"
 
 InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
-    : process_time_(0.0) {
+    : process_time_(0.0),
+      last_buffer_(),
+      recorder_() {
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {
@@ -136,11 +138,20 @@ void InstantSonicViewAudioProcessor::processBlock(
     juce::AudioSampleBuffer& buffer,
     juce::MidiBuffer& midiMessages) {
   const double counter_start(juce::Time::getMillisecondCounterHiRes());
-  last_buffer_ = buffer;
-  const float* const mono_buffer(buffer.getReadPointer(0));
-  const unsigned int mono_buffer_length(buffer.getNumSamples());
+  if (recorder_.isReplaying()) {
+    if (!recorder_.GetNextReplayBlock(&last_buffer_)) {
+      last_buffer_ = buffer;
+    } else {
+      buffer = last_buffer_;
+    }
+  } else {
+    last_buffer_ = buffer;
+  }
+  const float* const mono_buffer(last_buffer_.getReadPointer(0));
+  const unsigned int mono_buffer_length(last_buffer_.getNumSamples());
   bridge_.FeedData(mono_buffer, mono_buffer_length);
-  bridge_.startThread();
+  recorder_.AudioCallback(buffer);
+  //bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
   // Inform UI of change
   sendChangeMessage();
@@ -175,6 +186,18 @@ void InstantSonicViewAudioProcessor::addChangeListener(
 
 const AudioSampleBuffer& InstantSonicViewAudioProcessor::GetLastBuffer(void) const {
   return last_buffer_;
+}
+
+void InstantSonicViewAudioProcessor::startRecording(void) {
+  recorder_.startRecording(getSampleRate());
+}
+
+void InstantSonicViewAudioProcessor::stopRecording(void) {
+  recorder_.stopRecording();
+}
+
+bool InstantSonicViewAudioProcessor::isRecording(void) const {
+  return recorder_.isRecording();
 }
 
 // DEBUG

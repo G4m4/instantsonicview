@@ -28,9 +28,9 @@
 
 #include "JuceHeader.h"
 
-class AudioRecorder : public ChangeListener {
+class AudioRecorder {
  public:
-  AudioRecorder(AudioThumbnail& thumbnailToUpdate);
+  AudioRecorder();
 
   ~AudioRecorder();
 
@@ -39,10 +39,9 @@ class AudioRecorder : public ChangeListener {
 
 
   bool isRecording() const;
-  void changeListenerCallback(ChangeBroadcaster* source);
+  void AudioCallback(const juce::AudioSampleBuffer& buffer);
 
 private:
-  AudioThumbnail& thumbnail;
   TimeSliceThread backgroundThread; // the thread that will write our audio data to disk
   ScopedPointer<AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
   MemoryBlock buffer_;

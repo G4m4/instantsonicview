@@ -28,7 +28,6 @@
 
 #include "JuceHeader.h"
 
-#include "instantsonicview/implementation/common/AudioRecorder.h"
 #include "instantsonicview/implementation/common/LiveScrollingAudioDisplay.h"
 #include "instantsonicview/implementation/common/RecordingThumbnail.h"
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
@@ -70,7 +69,6 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
  private:
   LiveScrollingAudioDisplay audio_display_;
   RecordingThumbnail recordingThumbnail;
-  AudioRecorder recorder;
   TextButton recordButton;
 
   juce::TextEditor debug_infos_;

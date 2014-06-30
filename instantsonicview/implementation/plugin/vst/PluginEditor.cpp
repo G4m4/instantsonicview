@@ -32,7 +32,6 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
     : AudioProcessorEditor(owner),
       audio_display_(),
       recordingThumbnail(),
-      recorder(recordingThumbnail.getAudioThumbnail()),
       recordButton("Record"),
       debug_infos_() {
   addAndMakeVisible(&audio_display_);
@@ -40,7 +39,6 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 
   addAndMakeVisible (recordingThumbnail);
 
-  getProcessor()->addChangeListener(&recorder);
 
   addAndMakeVisible (recordButton);
   recordButton.addListener (this);
@@ -59,7 +57,6 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 
 InstantSonicViewAudioProcessorEditor::~InstantSonicViewAudioProcessorEditor() {
   getProcessor()->removeChangeListener(&audio_display_);
-  getProcessor()->removeChangeListener(&recorder);
   getProcessor()->removeChangeListener(this);
 }
 
@@ -85,6 +82,13 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
   InstantSonicViewAudioProcessor* proc(getProcessor());
   // No other change broacaster than the processor for now!
   INSTANTSONICVIEW_ASSERT(source == proc);
+  if (getProcessor()->isRecording()) {
+    recordingThumbnail.getAudioThumbnail().addBlock(nextSampleNum,
+                                                    getProcessor()->GetLastBuffer(),
+                                                    0,
+                                                    getProcessor()->GetLastBuffer().getNumSamples());
+    nextSampleNum += getProcessor()->GetLastBuffer().getNumSamples();
+  }
 }
 
 void InstantSonicViewAudioProcessorEditor::timerCallback() {
@@ -94,7 +98,7 @@ void InstantSonicViewAudioProcessorEditor::timerCallback() {
 
 void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
   if (button == &recordButton) {
-    if (recorder.isRecording())
+    if (getProcessor()->isRecording())
       stopRecording();
     else
       startRecording();
@@ -126,14 +130,17 @@ InstantSonicViewAudioProcessor* InstantSonicViewAudioProcessorEditor::getProcess
 }
 
 void InstantSonicViewAudioProcessorEditor::startRecording() {
-  recorder.startRecording(getProcessor()->getSampleRate());
-
+  getProcessor()->startRecording();
   recordButton.setButtonText ("Stop");
+  // Reset our recording thumbnail
+  recordingThumbnail.getAudioThumbnail().reset(getProcessor()->getNumOutputChannels(),
+                                               getProcessor()->getSampleRate());
+  nextSampleNum = 0;
   recordingThumbnail.setDisplayFullThumbnail (false);
 }
 
 void InstantSonicViewAudioProcessorEditor::stopRecording() {
-  recorder.stop();
+  getProcessor()->stopRecording();
   recordButton.setButtonText ("Record");
   recordingThumbnail.setDisplayFullThumbnail (true);
 }

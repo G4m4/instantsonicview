@@ -27,6 +27,7 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/AudioRecorder.h"
 #include "instantsonicview/implementation/common/Bridge.h"
 
 /// @brief Plugin "processor" class
@@ -80,6 +81,9 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
 
   const AudioSampleBuffer& GetLastBuffer(void) const;
 
+  void startRecording(void);
+  void stopRecording(void);
+  bool isRecording(void) const;
   // DEBUG
   double GetLastProcessTime() const;
   //  /DEBUG
@@ -89,6 +93,7 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
  private:
   double process_time_;
   AudioSampleBuffer last_buffer_;
+  AudioRecorder recorder_;
 
   Bridge bridge_;
 

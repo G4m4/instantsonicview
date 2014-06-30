@@ -26,11 +26,9 @@
 
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
 
-AudioRecorder::AudioRecorder (AudioThumbnail& thumbnailToUpdate)
-    : thumbnail (thumbnailToUpdate),
-      backgroundThread("Audio Recorder Thread"),
+AudioRecorder::AudioRecorder ()
+    : backgroundThread("Audio Recorder Thread"),
       buffer_(),
-      nextSampleNum(0),
       activeWriter(nullptr) {
   backgroundThread.startThread();
 }
@@ -58,16 +56,12 @@ void AudioRecorder::startRecording(double sample_rate) {
         // write the data to disk on our background thread.
         threadedWriter = new AudioFormatWriter::ThreadedWriter (writer, backgroundThread, 32768);
 
-        // Reset our recording thumbnail
-        thumbnail.reset (writer->getNumChannels(), writer->getSampleRate());
-        nextSampleNum = 0;
-
         // And now, swap over our active writer pointer so that the audio callback will start using it..
         const ScopedLock sl (writerLock);
         activeWriter = threadedWriter;
       }
     }
-  }
+  }  // (sample_rate > 0)?
 }
 
 void AudioRecorder::stopRecording(void) {
@@ -87,15 +81,13 @@ bool AudioRecorder::isRecording() const {
   return activeWriter != nullptr;
 }
 
-void AudioRecorder::changeListenerCallback(ChangeBroadcaster* source) {
-  const InstantSonicViewAudioProcessor* proc(dynamic_cast<const InstantSonicViewAudioProcessor*>(source));
-  assert(proc != nullptr);
+void AudioRecorder::AudioCallback(const juce::AudioSampleBuffer& buffer) {
   const ScopedLock sl (writerLock);
 
   if (activeWriter != nullptr) {
-    activeWriter->write(proc->GetLastBuffer().getArrayOfReadPointers(), proc->GetLastBuffer().getNumSamples());
+    activeWriter->write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
+  }
+}
 
-    thumbnail.addBlock (nextSampleNum, proc->GetLastBuffer(), 0, proc->GetLastBuffer().getNumSamples());
-    nextSampleNum += proc->GetLastBuffer().getNumSamples();
   }
 }
