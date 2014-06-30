@@ -35,8 +35,8 @@ class AudioRecorder : public ChangeListener {
   ~AudioRecorder();
 
   void startRecording(double sample_rate);
+  void stopRecording(void);
 
-  void stop();
 
   bool isRecording() const;
   void changeListenerCallback(ChangeBroadcaster* source);

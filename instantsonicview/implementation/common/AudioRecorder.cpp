@@ -36,11 +36,11 @@ AudioRecorder::AudioRecorder (AudioThumbnail& thumbnailToUpdate)
 }
 
 AudioRecorder::~AudioRecorder() {
-  stop();
+  stopRecording();
 }
 
 void AudioRecorder::startRecording(double sample_rate) {
-  stop();
+  stopRecording();
 
   if (sample_rate > 0) {
     // Create an OutputStream to write to our destination memory block...
@@ -70,7 +70,7 @@ void AudioRecorder::startRecording(double sample_rate) {
   }
 }
 
-void AudioRecorder::stop() {
+void AudioRecorder::stopRecording(void) {
   // First, clear this pointer to stop the audio callback from using our writer object..
   {
     const ScopedLock sl (writerLock);
