@@ -31,6 +31,7 @@ InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {
+  bridge_.stopThread(100);
 }
 
 const juce::String InstantSonicViewAudioProcessor::getName() const {
