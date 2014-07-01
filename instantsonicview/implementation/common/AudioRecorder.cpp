@@ -27,13 +27,12 @@
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
 
 AudioRecorder::AudioRecorder ()
-    : backgroundThread("Audio Recorder Thread"),
-      buffer_(),
-      float_buffer_(),
-      activeWriter(nullptr),
-      active_reader_(nullptr),
-      reader_samples_num_(0) {
-  backgroundThread.startThread();
+    : float_buffer_(),
+      current_writing_cursor_(0),
+      current_reading_cursor_(0),
+      is_writing_(false),
+      is_reading_(false) {
+  // Nothing to do here for now
 }
 
 AudioRecorder::~AudioRecorder() {
@@ -45,97 +44,58 @@ void AudioRecorder::startRecording(double sample_rate) {
   stopRecording();
 
   if (sample_rate > 0) {
-    // Create an OutputStream to write to our destination memory block...
-    ScopedPointer<MemoryOutputStream> memStream(new juce::MemoryOutputStream(buffer_, false));
-
-    if (memStream != nullptr) {
-      // Now create a WAV writer object that writes to our output stream...
-      WavAudioFormat wavFormat;
-      AudioFormatWriter* writer = wavFormat.createWriterFor(memStream, sample_rate, 1, 16, StringPairArray(), 0);
-
-      if (writer != nullptr) {
-        memStream.release(); // (passes responsibility for deleting the stream to the writer object that is now using it)
-
-        // Now we'll create one of these helper objects which will act as a FIFO buffer, and will
-        // write the data to disk on our background thread.
-        threadedWriter = new AudioFormatWriter::ThreadedWriter (writer, backgroundThread, 32768);
-
-        // And now, swap over our active writer pointer so that the audio callback will start using it..
-        const ScopedLock sl (writerLock);
-        activeWriter = threadedWriter;
-      }
-    }
+    current_writing_cursor_ = 0;
+    is_writing_ = true;
   }  // (sample_rate > 0)?
 }
 
 void AudioRecorder::stopRecording(void) {
-  // First, clear this pointer to stop the audio callback from using our writer object..
-  {
-    const ScopedLock sl (writerLock);
-    activeWriter = nullptr;
-  }
-
-  // Now we can delete the writer object. It's done in this order because the deletion could
-  // take a little time while remaining data gets flushed to disk, so it's best to avoid blocking
-  // the audio callback while this happens.
-  threadedWriter = nullptr;
+  float_buffer_.setSize(current_writing_cursor_);
+  is_writing_ = false;
 }
 
 void AudioRecorder::startReplay(void) {
   stopReplay();
 
-  ScopedPointer<MemoryInputStream> memStream(new juce::MemoryInputStream(buffer_, false));
-
-  if (memStream != nullptr) {
-    // Now create a WAV writer object that writes to our output stream...
-    juce::WavAudioFormat wavFormat;
-    juce::AudioFormatReader* reader = wavFormat.createReaderFor(memStream, true);
-
-    if (reader != nullptr) {
-      memStream.release(); // (passes responsibility for deleting the stream to the writer object that is now using it)
-      active_reader_ = reader;
-      reader_samples_num_ = 0;
-    }
-  }
+  is_reading_ = true;
+  current_reading_cursor_ = 0;
 }
 
 void AudioRecorder::stopReplay(void) {
-  delete active_reader_;
-  active_reader_ = nullptr;
+  is_reading_ = false;
 }
 
 bool AudioRecorder::isReplaying() const {
-  return active_reader_ != nullptr;
+  return is_reading_;
 }
 
 bool AudioRecorder::isRecording() const {
-  return activeWriter != nullptr;
+  return is_writing_;
 }
 
 void AudioRecorder::AudioCallback(const juce::AudioSampleBuffer& buffer) {
-  const ScopedLock sl (writerLock);
-
-  if (activeWriter != nullptr) {
-    activeWriter->write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
-    float_buffer_.append(buffer.getReadPointer(0), buffer.getNumSamples());
+  if (isRecording()) {
+    float_buffer_.insert(buffer.getReadPointer(0),
+                         buffer.getNumSamples() * sizeof(float),
+                         current_writing_cursor_);
+    current_writing_cursor_ += buffer.getNumSamples() * sizeof(float);
   }
 }
 
 bool AudioRecorder::GetNextReplayBlock(juce::AudioSampleBuffer* dest) {
-  if (active_reader_ == nullptr) {
+  if (!isReplaying()) {
     return false;
   } else {
-    if (reader_samples_num_ > active_reader_->lengthInSamples) {
+    if (current_reading_cursor_ >= current_writing_cursor_) {
       stopReplay();
       return false;
     } else {
-      active_reader_->read(dest,
-                           0,
-                           dest->getNumSamples(),
-                           reader_samples_num_,
-                           true,
-                           false);
-      reader_samples_num_ += dest->getNumSamples();
+      const unsigned int kNumSamples(dest->getNumSamples());
+      dest->clear();
+      const float* kAudioData(static_cast<float*>(float_buffer_.getData())
+                              + current_reading_cursor_ / sizeof(float));
+      dest->addFrom(0, 0, kAudioData, kNumSamples);
+      current_reading_cursor_ += kNumSamples * sizeof(float);
       return true;
     }
   }

@@ -50,16 +50,11 @@ class AudioRecorder {
   const float* GetAudioData(void) const;
 
 private:
-  TimeSliceThread backgroundThread; // the thread that will write our audio data to disk
-  ScopedPointer<AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
-  MemoryBlock buffer_;
   MemoryBlock float_buffer_;
-  int64 nextSampleNum;
-  AudioFormatReader* active_reader_;
-  int64 reader_samples_num_;
-
-  CriticalSection writerLock;
-  AudioFormatWriter::ThreadedWriter* volatile activeWriter;
+  std::size_t current_writing_cursor_;
+  std::size_t current_reading_cursor_;
+  bool is_writing_;
+  bool is_reading_;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioRecorder)
 };
