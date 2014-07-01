@@ -30,6 +30,7 @@
 InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
     InstantSonicViewAudioProcessor* owner)
     : AudioProcessorEditor(owner),
+      curve_display_(),
       audio_display_(),
       recordingThumbnail(),
       recordButton("Record"),
@@ -39,6 +40,9 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
       was_replaying_(false),
       analyzed_(false),
       debug_infos_() {
+  addAndMakeVisible(&curve_display_);
+  addChangeListener(&curve_display_);
+
   addAndMakeVisible(&audio_display_);
   getProcessor()->addChangeListener(&audio_display_);
 
@@ -70,6 +74,7 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 }
 
 InstantSonicViewAudioProcessorEditor::~InstantSonicViewAudioProcessorEditor() {
+  removeChangeListener(&curve_display_);
   getProcessor()->removeChangeListener(&audio_display_);
   getProcessor()->removeChangeListener(this);
 }
@@ -87,6 +92,8 @@ void InstantSonicViewAudioProcessorEditor::resized(void) {
   recordButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
   replayButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
   analyzeButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
+
+  curve_display_.setBounds(area.removeFromTop(getHeight() / 3).reduced(8));
 
   // DEBUG
   debug_infos_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));

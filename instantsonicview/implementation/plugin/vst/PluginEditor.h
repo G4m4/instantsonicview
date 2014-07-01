@@ -28,6 +28,7 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/CurveDisplay.h"
 #include "instantsonicview/implementation/common/LiveScrollingAudioDisplay.h"
 #include "instantsonicview/implementation/common/RecordingThumbnail.h"
 #include "instantsonicview/implementation/plugin/vst/PluginProcessor.h"
@@ -40,6 +41,7 @@ static const int kMainWindowSizeY(600);
 /// Contains all UI and user control stuff
 class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
                                              public juce::ChangeListener,
+                                             public juce::ChangeBroadcaster,
                                              public juce::Timer,
                                              public juce::Button::Listener {
  public:
@@ -70,7 +72,9 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
 
   void startAnalysis(void);
   void HandleAnalysisData(void);
+
  private:
+  CurveDisplay curve_display_;
   LiveScrollingAudioDisplay audio_display_;
   RecordingThumbnail recordingThumbnail;
   TextButton recordButton;
