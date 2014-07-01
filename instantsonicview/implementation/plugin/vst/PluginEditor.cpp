@@ -34,8 +34,10 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
       recordingThumbnail(),
       recordButton("Record"),
       replayButton("Replay"),
+      analyzeButton("Analyze"),
       nextSampleNum(0),
       was_replaying_(false),
+      analyzed_(false),
       debug_infos_() {
   addAndMakeVisible(&audio_display_);
   getProcessor()->addChangeListener(&audio_display_);
@@ -51,6 +53,11 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
   replayButton.addListener (this);
   replayButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
   replayButton.setColour (TextButton::textColourOnId, Colours::black);
+
+  addAndMakeVisible(analyzeButton);
+  analyzeButton.addListener (this);
+  analyzeButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
+  analyzeButton.setColour (TextButton::textColourOnId, Colours::black);
 
   // DEBUG
   addAndMakeVisible(&debug_infos_);
@@ -103,6 +110,10 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
     replayButton.setButtonText("Replay");
     was_replaying_ = false;
   }
+
+  if (analyzed_) {
+    HandleAnalysisData();
+  }
 }
 
 void InstantSonicViewAudioProcessorEditor::timerCallback() {
@@ -118,6 +129,8 @@ void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
       startRecording();
   } else if (button == &replayButton) {
     startReplay();
+  } else if (button == &analyzeButton) {
+    startAnalysis();
   } else {
     // Should never happen
     INSTANTSONICVIEW_ASSERT(false);
@@ -165,4 +178,32 @@ void InstantSonicViewAudioProcessorEditor::startReplay(void) {
   getProcessor()->startReplay();
   replayButton.setButtonText("Stop");
   was_replaying_ = true;
+}
+
+void InstantSonicViewAudioProcessorEditor::startAnalysis(void) {
+  getProcessor()->startAnalysis();
+  analyzed_ = true;
+}
+
+void InstantSonicViewAudioProcessorEditor::HandleAnalysisData(void) {
+  const FeaturesData kFeatures(getProcessor()->GetFeatures());
+  if (!kFeatures.data) {
+    return;
+  }
+  curve_display_.clear();
+  for (unsigned int feature_idx(0);
+       feature_idx < kFeatures.features_count;
+       ++feature_idx) {
+    juce::Array<float> current_curve_data;
+    for (unsigned int subframe_idx(0);
+         subframe_idx < kFeatures.subframes_count;
+         ++subframe_idx) {
+      const float value(kFeatures.data[subframe_idx * kFeatures.features_count + feature_idx]);
+      current_curve_data.add(value);
+    }  // subframe_idx
+    curve_display_.createCurve(current_curve_data);
+  }  // feature_idx
+  analyzed_ = false;
+  // Inform child UI elements of changes
+  sendChangeMessage();
 }
