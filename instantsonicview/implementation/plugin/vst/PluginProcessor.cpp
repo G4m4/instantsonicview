@@ -149,7 +149,7 @@ void InstantSonicViewAudioProcessor::processBlock(
   }
   const float* const mono_buffer(last_buffer_.getReadPointer(0));
   const unsigned int mono_buffer_length(last_buffer_.getNumSamples());
-  bridge_.FeedData(mono_buffer, mono_buffer_length);
+  //bridge_.FeedData(mono_buffer, mono_buffer_length);
   recorder_.AudioCallback(buffer);
   //bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
@@ -208,6 +208,10 @@ bool InstantSonicViewAudioProcessor::isRecording(void) const {
   return recorder_.isRecording();
 }
 
+void InstantSonicViewAudioProcessor::startAnalysis(void) {
+  bridge_.PrepareToAnalyze(recorder_.GetAudioDataLength());
+  bridge_.FeedData(recorder_.GetAudioData(), recorder_.GetAudioDataLength());
+  bridge_.startThread();
 }
 
 // DEBUG
@@ -218,7 +222,21 @@ double InstantSonicViewAudioProcessor::GetLastProcessTime() const {
 
 float InstantSonicViewAudioProcessor::GetFeatureValue(
     const unsigned int feature_idx) const {
-  return bridge_.GetFeatureValue(feature_idx);
+  return bridge_.GetFeatureValue(0, feature_idx);
+}
+
+FeaturesData InstantSonicViewAudioProcessor::GetFeatures(void) const {
+  const float* features_data(bridge_.GetFeatures());
+  if (features_data) {
+    juce::Array<float> features();
+    return FeaturesData(bridge_.GetFeatures(),
+                        bridge_.SubframesCount(),
+                        bridge_.FeaturesCount());
+  } else {
+    return FeaturesData(nullptr,
+                        0,
+                        0);
+  }
 }
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter() {

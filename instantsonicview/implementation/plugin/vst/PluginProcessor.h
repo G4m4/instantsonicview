@@ -30,6 +30,21 @@
 #include "instantsonicview/implementation/common/AudioRecorder.h"
 #include "instantsonicview/implementation/common/Bridge.h"
 
+struct FeaturesData {
+  FeaturesData(const float* data,
+  const unsigned int subframes_count,
+  const unsigned int features_count)
+  : data(data),
+    subframes_count(subframes_count),
+    features_count(features_count) {
+    // Nothing to do here for now
+  }
+
+  const float* data;
+  const unsigned int subframes_count;
+  const unsigned int features_count;
+};
+
 /// @brief Plugin "processor" class
 ///
 /// Contains all audio, presets and Midi stuff
@@ -88,11 +103,14 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
   void stopRecording(void);
   bool isRecording(void) const;
 
+  void startAnalysis(void);
+
   // DEBUG
   double GetLastProcessTime() const;
   //  /DEBUG
 
   float GetFeatureValue(const unsigned int feature_idx) const;
+  FeaturesData GetFeatures(void) const;
 
  private:
   double process_time_;
