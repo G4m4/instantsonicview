@@ -29,6 +29,7 @@
 AudioRecorder::AudioRecorder ()
     : backgroundThread("Audio Recorder Thread"),
       buffer_(),
+      float_buffer_(),
       activeWriter(nullptr),
       active_reader_(nullptr),
       reader_samples_num_(0) {
@@ -116,6 +117,7 @@ void AudioRecorder::AudioCallback(const juce::AudioSampleBuffer& buffer) {
 
   if (activeWriter != nullptr) {
     activeWriter->write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
+    float_buffer_.append(buffer.getReadPointer(0), buffer.getNumSamples());
   }
 }
 
@@ -137,4 +139,12 @@ bool AudioRecorder::GetNextReplayBlock(juce::AudioSampleBuffer* dest) {
       return true;
     }
   }
+}
+
+unsigned int AudioRecorder::GetAudioDataLength(void) const {
+  return float_buffer_.getSize() / sizeof(float);
+}
+
+const float* AudioRecorder::GetAudioData(void) const {
+  return static_cast<float*>(float_buffer_.getData());
 }

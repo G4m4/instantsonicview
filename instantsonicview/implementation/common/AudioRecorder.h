@@ -46,10 +46,14 @@ class AudioRecorder {
 
   bool GetNextReplayBlock(juce::AudioSampleBuffer* dest);
 
+  unsigned int GetAudioDataLength(void) const;
+  const float* GetAudioData(void) const;
+
 private:
   TimeSliceThread backgroundThread; // the thread that will write our audio data to disk
   ScopedPointer<AudioFormatWriter::ThreadedWriter> threadedWriter; // the FIFO used to buffer the incoming data
   MemoryBlock buffer_;
+  MemoryBlock float_buffer_;
   int64 nextSampleNum;
   AudioFormatReader* active_reader_;
   int64 reader_samples_num_;
