@@ -83,8 +83,10 @@ void InstantSonicViewAudioProcessorEditor::resized(void) {
 
   audio_display_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
   recordingThumbnail.setBounds(area.removeFromTop(getHeight() / 4).reduced(8));
-  recordButton.setBounds(area.removeFromTop(36).removeFromLeft(140).reduced(8));
-  replayButton.setBounds(area.removeFromTop(72).removeFromLeft(140).reduced(8));
+  juce::Rectangle<int> kButtonArea(area.removeFromTop(getHeight() / 16));
+  recordButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
+  replayButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
+  analyzeButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
 
   // DEBUG
   debug_infos_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
