@@ -41,15 +41,22 @@ class Bridge : public juce::Thread {
   // Inherited from parent
   virtual void run();
 
+  void PrepareToAnalyze(const unsigned int data_length);
+
   void FeedData(const float* const data, const unsigned int data_length);
-  float GetFeatureValue(const unsigned int feature_idx) const;
+  float GetFeatureValue(const unsigned int subframe_idx,
+                        const unsigned int feature_idx) const;
+  const float* GetFeatures(void) const;
+  unsigned int SubframesCount(void) const;
+  unsigned int FeaturesCount(void) const;
 
  private:
   const float* data_;
   unsigned int data_length_;
   bool done_;
 
-  float features_value_[chartreuse::interface::kAvailableDescriptorsCount * 11];
+  float* features_value_;
+  unsigned int subframes_count_;
 
   chartreuse::interface::Analyzer analyzer_;
 

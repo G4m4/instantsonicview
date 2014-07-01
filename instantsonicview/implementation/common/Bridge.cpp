@@ -31,13 +31,14 @@ Bridge::Bridge()
       data_(nullptr),
       data_length_(0),
       done_(false),
-      features_value_(),
+      features_value_(nullptr),
+      subframes_count_(0),
       analyzer_(48000.0f) {
   // Nothing to do here for now
 }
 
 Bridge::~Bridge() {
-  // Nothing to do here for now
+  delete[] features_value_;
 }
 
 void Bridge::run() {
@@ -47,13 +48,15 @@ void Bridge::run() {
   if (done_) {
     return;
   } else {
-    const unsigned int kSubframesCount(analyzer_.Process(data_,
-                                                         data_length_,
-                                                         &features_value_[0]));
-    INSTANTSONICVIEW_ASSERT(kSubframesCount
-      < sizeof(features_value_) / instantsonicview::analyzer::kAvailableDescriptorsCount);
+    INSTANTSONICVIEW_ASSERT(features_value_ != nullptr);
+    subframes_count_ = analyzer_.Process(data_, data_length_, &features_value_[0]);
     done_ = true;
   }
+}
+
+void Bridge::PrepareToAnalyze(const unsigned int data_length) {
+  delete[] features_value_;
+  features_value_ = new float[((data_length / 480) + 1) * instantsonicview::analyzer::kAvailableDescriptorsCount];
 }
 
 void Bridge::FeedData(const float* const data, const unsigned int data_length) {
@@ -62,6 +65,24 @@ void Bridge::FeedData(const float* const data, const unsigned int data_length) {
   done_ = false;
 }
 
-float Bridge::GetFeatureValue(const unsigned int feature_idx) const {
-  return features_value_[feature_idx];
+float Bridge::GetFeatureValue(const unsigned int subframe_idx,
+                              const unsigned int feature_idx) const {
+  return features_value_[subframe_idx * instantsonicview::analyzer::kAvailableDescriptorsCount
+                         + feature_idx];
+}
+
+const float* Bridge::GetFeatures(void) const {
+  if (done_) {
+    return &features_value_[0];
+  } else {
+    return nullptr;
+  }
+}
+
+unsigned int Bridge::SubframesCount(void) const {
+  return subframes_count_;
+}
+
+unsigned int Bridge::FeaturesCount(void) const {
+  return instantsonicview::analyzer::kAvailableDescriptorsCount;
 }
