@@ -192,6 +192,10 @@ void InstantSonicViewAudioProcessor::startReplay(void) {
   recorder_.startReplay();
 }
 
+bool InstantSonicViewAudioProcessor::isReplaying(void) const {
+  return recorder_.isReplaying();
+}
+
 void InstantSonicViewAudioProcessor::startRecording(void) {
   recorder_.startRecording(getSampleRate());
 }
@@ -204,8 +208,6 @@ bool InstantSonicViewAudioProcessor::isRecording(void) const {
   return recorder_.isRecording();
 }
 
-bool InstantSonicViewAudioProcessor::isReplaying(void) const {
-  return recorder_.isReplaying();
 }
 
 // DEBUG
