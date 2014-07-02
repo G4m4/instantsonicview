@@ -45,14 +45,15 @@ void CurveDisplay::paint (Graphics& g) {
   g.fillAll(juce::Colours::black);
   juce::Random kRandomGenerator;
   Rectangle<int> area(getLocalBounds().removeFromTop(10));
+  float hue(0.0f);
   for (int curve_idx(0); curve_idx < curves_.size(); ++curve_idx) {
-    const float kHue(kRandomGenerator.nextFloat());
-    g.setColour(juce::Colour(kHue, 1.0f, 0.5f, 1.0f));
+    g.setColour(juce::Colour(hue, 1.0f, 0.7f, 1.0f));
     g.drawText(juce::String(curve_idx),
                area.removeFromLeft(20),
                juce::Justification::centredLeft,
                true);
     g.strokePath(curves_[curve_idx], juce::PathStrokeType (2.0f));
+    hue += 1.0f / curves_.size();
   }
 }
 
