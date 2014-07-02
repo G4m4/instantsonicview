@@ -43,7 +43,8 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
                                              public juce::ChangeListener,
                                              public juce::ChangeBroadcaster,
                                              public juce::Timer,
-                                             public juce::Button::Listener {
+                                             public juce::Button::Listener,
+                                             public juce::Slider::Listener {
  public:
   explicit InstantSonicViewAudioProcessorEditor(InstantSonicViewAudioProcessor* owner);
   ~InstantSonicViewAudioProcessorEditor();
@@ -55,6 +56,7 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   void changeListenerCallback(juce::ChangeBroadcaster *source);
   void timerCallback();
   void buttonClicked(Button* button) override;
+  void sliderValueChanged(Slider* slider) override;
 
   // Give access to parameter changes to other UI components
   float GetParamValue(const int param_id);
@@ -73,6 +75,9 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   void startAnalysis(void);
   void HandleAnalysisData(void);
 
+  void setDisplayGain(double value);
+  void setThreshold(double value);
+
  private:
   CurveDisplay curve_display_;
   LiveScrollingAudioDisplay audio_display_;
@@ -80,6 +85,8 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   TextButton recordButton;
   TextButton replayButton;
   TextButton analyzeButton;
+  Slider displayGain;
+  Slider threshold;
   int64 nextSampleNum;
   bool was_replaying_;
   bool analyzed_;

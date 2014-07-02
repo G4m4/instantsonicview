@@ -36,6 +36,10 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
       recordButton("Record"),
       replayButton("Replay"),
       analyzeButton("Analyze"),
+      displayGain(juce::Slider::SliderStyle::Rotary,
+                  juce::Slider::TextEntryBoxPosition::TextBoxLeft),
+      threshold(juce::Slider::SliderStyle::Rotary,
+                juce::Slider::TextEntryBoxPosition::TextBoxLeft),
       nextSampleNum(0),
       was_replaying_(false),
       analyzed_(false),
@@ -63,6 +67,17 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
   analyzeButton.setColour (TextButton::buttonColourId, Colour (0xffff5c5c));
   analyzeButton.setColour (TextButton::textColourOnId, Colours::black);
 
+  addAndMakeVisible(displayGain);
+  displayGain.setRange(0.0, 10000.0);
+  displayGain.setSkewFactor(0.1);
+  displayGain.setValue(1.0);
+  displayGain.addListener(this);
+
+  addAndMakeVisible(threshold);
+  threshold.setRange(0.0, 1.0);
+  displayGain.setSkewFactor(0.01);
+  threshold.addListener(this);
+
   // DEBUG
   addAndMakeVisible(&debug_infos_);
   this->startTimer(kTimerInterval);
@@ -88,10 +103,13 @@ void InstantSonicViewAudioProcessorEditor::resized(void) {
 
   audio_display_.setBounds(area.removeFromTop(getHeight() / 8).reduced(8));
   recordingThumbnail.setBounds(area.removeFromTop(getHeight() / 4).reduced(8));
-  juce::Rectangle<int> kButtonArea(area.removeFromTop(getHeight() / 16));
+
+  juce::Rectangle<int> kButtonArea(area.removeFromTop(getHeight() / 8));
   recordButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
   replayButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
   analyzeButton.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
+  displayGain.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
+  threshold.setBounds(kButtonArea.removeFromLeft(140).reduced(8));
 
   curve_display_.setBounds(area.removeFromTop(getHeight() / 3).reduced(8));
 
@@ -140,6 +158,17 @@ void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
     startReplay();
   } else if (button == &analyzeButton) {
     startAnalysis();
+  } else {
+    // Should never happen
+    INSTANTSONICVIEW_ASSERT(false);
+  }
+}
+
+void InstantSonicViewAudioProcessorEditor::sliderValueChanged(Slider* slider) {
+  if (slider == &displayGain) {
+    setDisplayGain(slider->getValue());
+  } else if (slider == &threshold) {
+    setThreshold(slider->getValue());
   } else {
     // Should never happen
     INSTANTSONICVIEW_ASSERT(false);
@@ -200,19 +229,42 @@ void InstantSonicViewAudioProcessorEditor::HandleAnalysisData(void) {
     return;
   }
   curve_display_.clear();
-  for (unsigned int feature_idx(0);
+
+  // Store AP first since thresholding is done on it
+  juce::Array<float> ap_curve_data;
+  const float kAPGain(static_cast<float>(displayGain.getValue()));
+  for (unsigned int subframe_idx(0);
+        subframe_idx < kFeatures.subframes_count;
+        ++subframe_idx) {
+    const float kRawValue(kFeatures.data[subframe_idx * kFeatures.features_count]);
+    const float kActualValue(kAPGain * kRawValue);
+    ap_curve_data.add(kActualValue);
+  }  // subframe_idx
+  curve_display_.createCurve(ap_curve_data);
+
+  const float kThreshold(static_cast<float>(threshold.getValue()));
+  for (unsigned int feature_idx(1);
        feature_idx < kFeatures.features_count;
        ++feature_idx) {
     juce::Array<float> current_curve_data;
     for (unsigned int subframe_idx(0);
          subframe_idx < kFeatures.subframes_count;
          ++subframe_idx) {
-      const float value(kFeatures.data[subframe_idx * kFeatures.features_count + feature_idx]);
-      current_curve_data.add(value);
+      const float kRawValue(kFeatures.data[subframe_idx * kFeatures.features_count + feature_idx]);
+      const float kActualValue(ap_curve_data[subframe_idx]> kThreshold ? kRawValue : 0.0f);
+      current_curve_data.add(kActualValue);
     }  // subframe_idx
     curve_display_.createCurve(current_curve_data);
   }  // feature_idx
   analyzed_ = false;
   // Inform child UI elements of changes
   sendChangeMessage();
+}
+
+void InstantSonicViewAudioProcessorEditor::setDisplayGain(double value) {
+  HandleAnalysisData();
+}
+
+void InstantSonicViewAudioProcessorEditor::setThreshold(double value) {
+  HandleAnalysisData();
 }
