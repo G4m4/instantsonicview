@@ -42,9 +42,7 @@ class AudioRecorder {
 
   bool isReplaying() const;
   bool isRecording() const;
-  void AudioCallback(const juce::AudioSampleBuffer& buffer);
-
-  bool GetNextReplayBlock(juce::AudioSampleBuffer* dest);
+  void ProcessBlock(juce::AudioSampleBuffer* buffer);
 
   unsigned int GetAudioDataLength(void) const;
   const float* GetAudioData(void) const;

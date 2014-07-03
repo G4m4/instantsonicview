@@ -73,30 +73,22 @@ bool AudioRecorder::isRecording() const {
   return is_writing_;
 }
 
-void AudioRecorder::AudioCallback(const juce::AudioSampleBuffer& buffer) {
+void AudioRecorder::ProcessBlock(juce::AudioSampleBuffer* buffer) {
+  const int kNumSamples(buffer->getNumSamples());
   if (isRecording()) {
-    float_buffer_.insert(buffer.getReadPointer(0),
-                         buffer.getNumSamples() * sizeof(float),
+    float_buffer_.insert(buffer->getReadPointer(0),
+                         kNumSamples * sizeof(float),
                          current_writing_cursor_);
-    current_writing_cursor_ += buffer.getNumSamples() * sizeof(float);
-  }
-}
-
-bool AudioRecorder::GetNextReplayBlock(juce::AudioSampleBuffer* dest) {
-  if (!isReplaying()) {
-    return false;
-  } else {
+    current_writing_cursor_ += buffer->getNumSamples() * sizeof(float);
+  } else if (isReplaying()) {
     if (current_reading_cursor_ >= current_writing_cursor_) {
       stopReplay();
-      return false;
     } else {
-      const unsigned int kNumSamples(dest->getNumSamples());
-      dest->clear();
-      const float* kAudioData(static_cast<float*>(float_buffer_.getData())
-                              + current_reading_cursor_ / sizeof(float));
-      dest->addFrom(0, 0, kAudioData, kNumSamples);
+      buffer->clear();
+      const float* kReplayData(static_cast<float*>(float_buffer_.getData())
+                               + current_reading_cursor_ / sizeof(float));
+      buffer->addFrom(0, 0, kReplayData, kNumSamples);
       current_reading_cursor_ += kNumSamples * sizeof(float);
-      return true;
     }
   }
 }

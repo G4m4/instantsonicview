@@ -138,19 +138,11 @@ void InstantSonicViewAudioProcessor::processBlock(
     juce::AudioSampleBuffer& buffer,
     juce::MidiBuffer& midiMessages) {
   const double counter_start(juce::Time::getMillisecondCounterHiRes());
-  if (recorder_.isReplaying()) {
-    if (!recorder_.GetNextReplayBlock(&last_buffer_)) {
-      last_buffer_ = buffer;
-    } else {
-      buffer = last_buffer_;
-    }
-  } else {
-    last_buffer_ = buffer;
-  }
-  const float* const mono_buffer(last_buffer_.getReadPointer(0));
-  const unsigned int mono_buffer_length(last_buffer_.getNumSamples());
+  recorder_.ProcessBlock(&buffer);
+  last_buffer_ = buffer;
+  const float* const mono_buffer(buffer.getReadPointer(0));
+  const unsigned int mono_buffer_length(buffer.getNumSamples());
   //bridge_.FeedData(mono_buffer, mono_buffer_length);
-  recorder_.AudioCallback(buffer);
   //bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
   // Inform UI of change
