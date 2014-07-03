@@ -228,7 +228,6 @@ float InstantSonicViewAudioProcessor::GetFeatureValue(
 FeaturesData InstantSonicViewAudioProcessor::GetFeatures(void) const {
   const float* features_data(bridge_.GetFeatures());
   if (features_data) {
-    juce::Array<float> features();
     return FeaturesData(bridge_.GetFeatures(),
                         bridge_.SubframesCount(),
                         bridge_.FeaturesCount());
