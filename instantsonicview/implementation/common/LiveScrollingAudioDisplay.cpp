@@ -35,12 +35,12 @@ LiveScrollingAudioDisplay::LiveScrollingAudioDisplay()
   startTimer(1000 / 75); // use a timer to keep repainting this component
 }
 
-void LiveScrollingAudioDisplay::changeListenerCallback(ChangeBroadcaster* source) {
-  const InstantSonicViewAudioProcessor* proc(dynamic_cast<const InstantSonicViewAudioProcessor*>(source));
-  assert(proc != nullptr);
-  for (int i = 0; i < proc->GetLastBuffer().getNumSamples(); ++i) {
+void LiveScrollingAudioDisplay::ProcessAudio(const float* audio_data,
+                                             unsigned int samples_count) {
+  assert(audio_data != nullptr);
+  for (unsigned int i = 0; i < samples_count; ++i) {
     float inputSample(0.0f);
-    inputSample += std::abs(proc->GetLastBuffer().getReadPointer(0)[i]);  // find the sum of all the channels
+    inputSample += std::abs(audio_data[i]);  // find the sum of all the channels
     pushSample (10.0f * inputSample); // boost the level to make it more easily visible.
   }
 }

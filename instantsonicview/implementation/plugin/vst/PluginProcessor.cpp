@@ -27,9 +27,10 @@
 #include "instantsonicview/implementation/plugin/vst/PluginEditor.h"
 
 InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
-    : process_time_(0.0),
-      last_buffer_(),
+    : AudioStreamSource(),
+      process_time_(0.0),
       recorder_() {
+  // Nothing to do here for now
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {
@@ -139,9 +140,11 @@ void InstantSonicViewAudioProcessor::processBlock(
     juce::MidiBuffer& midiMessages) {
   const double counter_start(juce::Time::getMillisecondCounterHiRes());
   recorder_.ProcessBlock(&buffer);
-  last_buffer_ = buffer;
   const float* const mono_buffer(buffer.getReadPointer(0));
   const unsigned int mono_buffer_length(buffer.getNumSamples());
+
+  StreamAudioDataIn(mono_buffer, mono_buffer_length);
+
   //bridge_.FeedData(mono_buffer, mono_buffer_length);
   //bridge_.startThread();
   process_time_ = juce::Time::getMillisecondCounterHiRes() - counter_start;
@@ -174,10 +177,6 @@ void InstantSonicViewAudioProcessor::addChangeListener(
   ChangeBroadcaster::addChangeListener(listener);
   // Update newly added listener
   sendChangeMessage();
-}
-
-const AudioSampleBuffer& InstantSonicViewAudioProcessor::GetLastBuffer(void) const {
-  return last_buffer_;
 }
 
 void InstantSonicViewAudioProcessor::startReplay(void) {

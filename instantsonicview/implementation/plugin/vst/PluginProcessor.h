@@ -28,6 +28,7 @@
 #include "JuceHeader.h"
 
 #include "instantsonicview/implementation/common/AudioRecorder.h"
+#include "instantsonicview/implementation/common/AudioStream.h"
 #include "instantsonicview/implementation/common/Bridge.h"
 
 struct FeaturesData {
@@ -49,7 +50,8 @@ struct FeaturesData {
 ///
 /// Contains all audio, presets and Midi stuff
 class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
-                                        public juce::ChangeBroadcaster {
+                                        public juce::ChangeBroadcaster,
+                                        public instantsonicview::AudioStreamSource {
  public:
   InstantSonicViewAudioProcessor();
   ~InstantSonicViewAudioProcessor();
@@ -94,8 +96,6 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
   // Overrides from inherited classes
   void addChangeListener(juce::ChangeListener* listener);
 
-  const AudioSampleBuffer& GetLastBuffer(void) const;
-
   void startReplay(void);
   bool isReplaying(void) const;
 
@@ -114,7 +114,6 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
 
  private:
   double process_time_;
-  AudioSampleBuffer last_buffer_;
   AudioRecorder recorder_;
 
   Bridge bridge_;

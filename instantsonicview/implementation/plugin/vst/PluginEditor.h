@@ -28,6 +28,7 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/AudioStream.h"
 #include "instantsonicview/implementation/common/CurveDisplay.h"
 #include "instantsonicview/implementation/common/LiveScrollingAudioDisplay.h"
 #include "instantsonicview/implementation/common/RecordingThumbnail.h"
@@ -87,12 +88,12 @@ class InstantSonicViewAudioProcessorEditor : public juce::AudioProcessorEditor,
   TextButton analyzeButton;
   Slider displayGain;
   Slider threshold;
-  int64 nextSampleNum;
   bool was_replaying_;
   bool analyzed_;
+  instantsonicview::AudioStreamListenerManager audiostream_listener_manager_;
 
   juce::TextEditor debug_infos_;
-  static const int kTimerInterval = 100;
+  static const int kTimerInterval = 10;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(InstantSonicViewAudioProcessorEditor)
 };

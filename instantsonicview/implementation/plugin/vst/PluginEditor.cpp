@@ -40,15 +40,15 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
                   juce::Slider::TextEntryBoxPosition::TextBoxLeft),
       threshold(juce::Slider::SliderStyle::Rotary,
                 juce::Slider::TextEntryBoxPosition::TextBoxLeft),
-      nextSampleNum(0),
       was_replaying_(false),
       analyzed_(false),
+      audiostream_listener_manager_(static_cast<InstantSonicViewAudioProcessor*>(owner)),
       debug_infos_() {
   addAndMakeVisible(&curve_display_);
   addChangeListener(&curve_display_);
 
   addAndMakeVisible(&audio_display_);
-  getProcessor()->addChangeListener(&audio_display_);
+  audiostream_listener_manager_.addListener(&audio_display_);
 
   addAndMakeVisible (recordingThumbnail);
 
@@ -69,13 +69,13 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 
   addAndMakeVisible(displayGain);
   displayGain.setRange(0.0, 10000.0);
-  displayGain.setSkewFactor(0.1);
+  displayGain.setSkewFactor(1.0);
   displayGain.setValue(1.0);
   displayGain.addListener(this);
 
   addAndMakeVisible(threshold);
   threshold.setRange(0.0, 1.0);
-  displayGain.setSkewFactor(0.01);
+  displayGain.setSkewFactor(0.001);
   threshold.addListener(this);
 
   // DEBUG
@@ -90,7 +90,6 @@ InstantSonicViewAudioProcessorEditor::InstantSonicViewAudioProcessorEditor(
 
 InstantSonicViewAudioProcessorEditor::~InstantSonicViewAudioProcessorEditor() {
   removeChangeListener(&curve_display_);
-  getProcessor()->removeChangeListener(&audio_display_);
   getProcessor()->removeChangeListener(this);
 }
 
@@ -124,14 +123,6 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
   // No other change broacaster than the processor for now!
   INSTANTSONICVIEW_ASSERT(source == proc);
 
-  if (getProcessor()->isRecording()) {
-    recordingThumbnail.getAudioThumbnail().addBlock(nextSampleNum,
-                                                    getProcessor()->GetLastBuffer(),
-                                                    0,
-                                                    getProcessor()->GetLastBuffer().getNumSamples());
-    nextSampleNum += getProcessor()->GetLastBuffer().getNumSamples();
-  }
-
   if (was_replaying_
       && !getProcessor()->isReplaying()) {
     replayButton.setButtonText("Replay");
@@ -146,6 +137,7 @@ void InstantSonicViewAudioProcessorEditor::changeListenerCallback(
 void InstantSonicViewAudioProcessorEditor::timerCallback() {
   const double time(getProcessor()->GetLastProcessTime());
   debug_infos_.setText(juce::String(time));
+  audiostream_listener_manager_.callListeners();
 }
 
 void InstantSonicViewAudioProcessorEditor::buttonClicked(Button* button) {
@@ -200,13 +192,15 @@ void InstantSonicViewAudioProcessorEditor::startRecording() {
   getProcessor()->startRecording();
   recordButton.setButtonText ("Stop");
   // Reset our recording thumbnail
+  audiostream_listener_manager_.addListener(&recordingThumbnail);
   recordingThumbnail.getAudioThumbnail().reset(getProcessor()->getNumOutputChannels(),
                                                getProcessor()->getSampleRate());
-  nextSampleNum = 0;
+  recordingThumbnail.nextSampleNum = 0;
   recordingThumbnail.setDisplayFullThumbnail (false);
 }
 
 void InstantSonicViewAudioProcessorEditor::stopRecording() {
+  audiostream_listener_manager_.removeListener(&recordingThumbnail);
   getProcessor()->stopRecording();
   recordButton.setButtonText ("Record");
   recordingThumbnail.setDisplayFullThumbnail (true);

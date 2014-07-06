@@ -27,6 +27,7 @@
 RecordingThumbnail::RecordingThumbnail()
     : thumbnailCache (10),
       thumbnail (512, formatManager, thumbnailCache),
+      nextSampleNum(0),
       displayFullThumb (false) {
   formatManager.registerBasicFormats();
   thumbnail.addChangeListener (this);
@@ -34,6 +35,18 @@ RecordingThumbnail::RecordingThumbnail()
 
 RecordingThumbnail::~RecordingThumbnail() {
   thumbnail.removeChangeListener (this);
+}
+
+void RecordingThumbnail::ProcessAudio(const float* audio_data,
+                                      unsigned int samples_count) {
+  // TODO(gm): remove this ugly thing
+  float* const* tmp_ptr = const_cast<float* const*>(&audio_data);
+  const juce::AudioSampleBuffer buffer(tmp_ptr, 1, samples_count);
+  getAudioThumbnail().addBlock(nextSampleNum,
+      buffer,
+      0,
+      samples_count);
+  nextSampleNum += samples_count;
 }
 
 AudioThumbnail& RecordingThumbnail::getAudioThumbnail() {

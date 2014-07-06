@@ -28,12 +28,16 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/AudioStream.h"
+
 class LiveScrollingAudioDisplay : public Component,
                                   private Timer,
-                                  public ChangeListener {
+                                  public instantsonicview::AudioStreamListenerManager::StreamListener {
  public:
   LiveScrollingAudioDisplay();
-  void changeListenerCallback(ChangeBroadcaster* source);
+
+  void ProcessAudio(const float* audio_data,
+                    unsigned int samples_count) override;
 
 private:
   float samples[1024];

@@ -28,17 +28,25 @@
 
 #include "JuceHeader.h"
 
+#include "instantsonicview/implementation/common/AudioStream.h"
+
 class RecordingThumbnail : public Component,
-                           private ChangeListener {
+                           private ChangeListener,
+                           public instantsonicview::AudioStreamListenerManager::StreamListener {
  public:
   RecordingThumbnail();
 
   ~RecordingThumbnail();
 
+  void ProcessAudio(const float* audio_data,
+                    unsigned int samples_count) override;
+
   AudioThumbnail& getAudioThumbnail();
   void setDisplayFullThumbnail(bool displayFull);
 
   void paint(Graphics& g) override;
+
+  int64 nextSampleNum;
 
 private:
   AudioFormatManager formatManager;
