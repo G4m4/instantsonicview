@@ -1,5 +1,5 @@
-/// @filename Bridge.h
-/// @brief InstantSonicView Bridge
+/// @filename AnalysisJob.h
+/// @brief InstantSonicView
 /// @author gm
 /// @copyright gm 2014
 ///
@@ -23,22 +23,25 @@
 // That's why we apply our coding style here
 
 
-#ifndef INSTANTSONICVIEW_IMPLEMENTATION_COMMON_BRIDGE_H_
-#define INSTANTSONICVIEW_IMPLEMENTATION_COMMON_BRIDGE_H_
+#ifndef INSTANTSONICVIEW_IMPLEMENTATION_COMMON_ANALYSISJOB_H_
+#define INSTANTSONICVIEW_IMPLEMENTATION_COMMON_ANALYSISJOB_H_
 
 #include "JuceHeader.h"
 
-#include "externals/chartreuse/chartreuse/src/interface/analyzer.h"
+#include "instantsonicview/src/analyzer/dcblock.h"
 
-#include "instantsonicview/implementation/common/AnalysisJob.h"
+#include "externals/chartreuse/chartreuse/src/interface/analyzer.h"
 
 /// @brief Bridge
 ///
 /// Handles processing stuff; may use multithreading in order to do it.
-class Bridge {
+class AnalysisJob : public juce::ThreadPoolJob {
  public:
-  Bridge();
-  ~Bridge();
+  AnalysisJob();
+  ~AnalysisJob();
+
+  // Inherited from parent
+  virtual juce::ThreadPoolJob::JobStatus runJob() override;
 
   /// @brief Method to be explicitly called at each sample rate change
   void SetSampleRate(double sample_rate);
@@ -46,24 +49,22 @@ class Bridge {
   void PrepareToAnalyze(const unsigned int data_length);
 
   void FeedData(const float* const data, const unsigned int data_length);
-  float GetFeatureValue(const unsigned int subframe_idx,
-                        const unsigned int feature_idx);
-  const float* GetFeatures(void);
-  unsigned int SubframesCount(void);
+
+  const float* GetFeatures(void) const;
+  unsigned int SubframesCount(void) const;
   unsigned int FeaturesCount(void) const;
 
  private:
-  void CheckForFinishedJob(void);
+  const float* data_;
+  unsigned int data_length_;
 
-  bool job_launched_;
-  bool job_done_;
   float* features_value_;
   unsigned int subframes_count_;
 
-  AnalysisJob job_;
-  juce::ThreadPool thread_pool_;
+  chartreuse::interface::Analyzer analyzer_;
+  instantsonicview::analyzer::DCBlock filter_;
 
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Bridge)
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AnalysisJob)
 };
 
-#endif  // INSTANTSONICVIEW_IMPLEMENTATION_COMMON_BRIDGE_H_
+#endif  // INSTANTSONICVIEW_IMPLEMENTATION_COMMON_ANALYSISJOB_H_

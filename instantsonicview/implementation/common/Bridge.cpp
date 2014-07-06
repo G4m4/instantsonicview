@@ -24,65 +24,78 @@
 
 #include "instantsonicview/implementation/common/Bridge.h"
 
+#include <algorithm>
+
 #include "instantsonicview/src/analyzer/features.h"
 
 Bridge::Bridge()
-    : juce::Thread("Instant Sonic View bridge"),
-      data_(nullptr),
-      data_length_(0),
-      done_(false),
+    : job_launched_(false),
+      job_done_(false),
       features_value_(nullptr),
       subframes_count_(0),
-      analyzer_(48000.0f) {
+      job_(),
+      thread_pool_(1) {
   // Nothing to do here for now
 }
 
 Bridge::~Bridge() {
+  thread_pool_.removeAllJobs(true, 100);
   delete[] features_value_;
 }
 
-void Bridge::run() {
-  if (threadShouldExit()) {
-    return;
-  }
-  if (done_) {
-    return;
-  } else {
-    INSTANTSONICVIEW_ASSERT(features_value_ != nullptr);
-    subframes_count_ = analyzer_.Process(data_, data_length_, &features_value_[0]);
-    done_ = true;
-  }
+void Bridge::SetSampleRate(double sample_rate) {
+  INSTANTSONICVIEW_ASSERT(sample_rate > 0.0);
+  //analyzer_.SetSampleRate(sample_rate);
+  job_.SetSampleRate(sample_rate);
 }
 
 void Bridge::PrepareToAnalyze(const unsigned int data_length) {
   delete[] features_value_;
   features_value_ = new float[((data_length / 480) + 1) * instantsonicview::analyzer::kAvailableDescriptorsCount];
+  job_.PrepareToAnalyze(data_length);
 }
 
 void Bridge::FeedData(const float* const data, const unsigned int data_length) {
-  data_ = data;
-  data_length_ = data_length;
-  done_ = false;
+  job_.FeedData(data, data_length);
+  job_done_ = false;
+  job_launched_ = true;
+  thread_pool_.addJob(&job_, false);
 }
 
 float Bridge::GetFeatureValue(const unsigned int subframe_idx,
-                              const unsigned int feature_idx) const {
+                              const unsigned int feature_idx) {
+  CheckForFinishedJob();
   return features_value_[subframe_idx * instantsonicview::analyzer::kAvailableDescriptorsCount
                          + feature_idx];
 }
 
-const float* Bridge::GetFeatures(void) const {
-  if (done_) {
-    return &features_value_[0];
-  } else {
-    return nullptr;
-  }
+const float* Bridge::GetFeatures(void) {
+  CheckForFinishedJob();
+  return &features_value_[0];
 }
 
-unsigned int Bridge::SubframesCount(void) const {
+unsigned int Bridge::SubframesCount(void) {
+  CheckForFinishedJob();
   return subframes_count_;
 }
 
 unsigned int Bridge::FeaturesCount(void) const {
   return instantsonicview::analyzer::kAvailableDescriptorsCount;
+}
+
+void Bridge::CheckForFinishedJob() {
+  if ((job_done_) || (!job_launched_)) {
+    return;
+  } else {
+    if (!job_.isRunning()) {
+      const bool kJobRemoved(thread_pool_.removeJob(&job_, false, 100));
+      INSTANTSONICVIEW_ASSERT(kJobRemoved == true);
+      subframes_count_ = job_.SubframesCount();
+      std::copy_n(job_.GetFeatures(), job_.FeaturesCount() * subframes_count_, &features_value_[0]);
+      job_done_ = true;
+      job_launched_ = false;
+    } else {
+      return;
+    }
+  }
 }

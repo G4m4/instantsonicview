@@ -34,7 +34,7 @@ InstantSonicViewAudioProcessor::InstantSonicViewAudioProcessor()
 }
 
 InstantSonicViewAudioProcessor::~InstantSonicViewAudioProcessor() {
-  bridge_.stopThread(100);
+  // Nothing to do here for now
 }
 
 const juce::String InstantSonicViewAudioProcessor::getName() const {
@@ -126,6 +126,7 @@ void InstantSonicViewAudioProcessor::changeProgramName(
 
 void InstantSonicViewAudioProcessor::prepareToPlay(double sampleRate,
                                                    int samplesPerBlock) {
+  bridge_.SetSampleRate(sampleRate);
   // Notify UI of the last changes
   sendChangeMessage();
 }
@@ -202,7 +203,6 @@ bool InstantSonicViewAudioProcessor::isRecording(void) const {
 void InstantSonicViewAudioProcessor::startAnalysis(void) {
   bridge_.PrepareToAnalyze(recorder_.GetAudioDataLength());
   bridge_.FeedData(recorder_.GetAudioData(), recorder_.GetAudioDataLength());
-  bridge_.startThread();
 }
 
 // DEBUG
@@ -212,11 +212,11 @@ double InstantSonicViewAudioProcessor::GetLastProcessTime() const {
 //  /DEBUG
 
 float InstantSonicViewAudioProcessor::GetFeatureValue(
-    const unsigned int feature_idx) const {
+    const unsigned int feature_idx) {
   return bridge_.GetFeatureValue(0, feature_idx);
 }
 
-FeaturesData InstantSonicViewAudioProcessor::GetFeatures(void) const {
+FeaturesData InstantSonicViewAudioProcessor::GetFeatures(void) {
   const float* features_data(bridge_.GetFeatures());
   if (features_data) {
     return FeaturesData(bridge_.GetFeatures(),

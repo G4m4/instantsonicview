@@ -109,8 +109,8 @@ class InstantSonicViewAudioProcessor  : public juce::AudioProcessor,
   double GetLastProcessTime() const;
   //  /DEBUG
 
-  float GetFeatureValue(const unsigned int feature_idx) const;
-  FeaturesData GetFeatures(void) const;
+  float GetFeatureValue(const unsigned int feature_idx);
+  FeaturesData GetFeatures(void);
 
  private:
   double process_time_;
