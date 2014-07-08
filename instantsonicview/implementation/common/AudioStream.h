@@ -21,7 +21,7 @@
 #ifndef INSTANTSONICVIEW_IMPLEMENTATION_COMMON_AUDIOSTREAM_H_
 #define INSTANTSONICVIEW_IMPLEMENTATION_COMMON_AUDIOSTREAM_H_
 
-#include <vector>
+#include <set>
 
 #include "JuceHeader.h"
 
@@ -84,7 +84,7 @@ class AudioStreamListenerManager {
   void removeListener(StreamListener* listener);
 
  private:
-  std::vector<StreamListener*> listeners_;
+  std::set<StreamListener*> listeners_;
   AudioStreamSource* source_;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioStreamListenerManager)

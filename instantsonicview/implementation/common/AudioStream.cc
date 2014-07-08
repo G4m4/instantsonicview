@@ -117,19 +117,16 @@ void AudioStreamListenerManager::callListeners() {
   }
   const float* kAudioData(source_->StreamAudioDataOut());
   for (AudioStreamListenerManager::StreamListener* listener : listeners_) {
-    if (listener != nullptr) {
-      listener->ProcessAudio(kAudioData, kElementsCount);
-    }
+    listener->ProcessAudio(kAudioData, kElementsCount);
   }
 }
 
 void AudioStreamListenerManager::addListener(StreamListener* listener) {
-  listeners_.push_back(listener);
+  listeners_.insert(listener);
 }
 
 void AudioStreamListenerManager::removeListener(StreamListener* listener) {
-  std::vector<StreamListener*>::iterator iter(std::find(listeners_.begin(), listeners_.end(), listener));
-  *iter = nullptr;
+  listeners_.erase(listener);
 }
 
 }  // namespace instantsonicview
