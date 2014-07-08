@@ -36,8 +36,6 @@ AudioStreamBuffer::~AudioStreamBuffer() {
 
 void AudioStreamBuffer::PushData(const float* data, unsigned int count) {
   INSTANTSONICVIEW_ASSERT(data != nullptr);
-  INSTANTSONICVIEW_ASSERT(count
-    <= static_cast<unsigned int>(abstract_fifo_.getFreeSpace()));
 
   int start1;
   int size1;
