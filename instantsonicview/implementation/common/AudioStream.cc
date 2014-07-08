@@ -77,7 +77,7 @@ unsigned int AudioStreamBuffer::ElementsCount() const {
 
 AudioStreamSource::AudioStreamSource()
     : fifo_(),
-      buffer_(4096) {
+      buffer_(8192) {
   // Nothing to do here for now
 }
 
